@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Destination {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  name      String
+  country   String
+  imageUrl  String
+  blurb     String?
+  articles  Article[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Article {
+  id            String      @id @default(cuid())
+  slug          String      @unique
+  title         String
+  excerpt       String
+  story         String[]
+  imageUrl      String
+  imageAlt      String
+  imageCredit   String?
+  readMinutes   Int         @default(4)
+  tags          String[]
+  favoriteCount Int         @default(0)
+  published     Boolean     @default(true)
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  favorites     Favorite[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([destinationId])
+  @@index([createdAt])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  visitorId String
+  createdAt DateTime @default(now())
+
+  @@unique([articleId, visitorId])
+  @@index([visitorId])
+}
